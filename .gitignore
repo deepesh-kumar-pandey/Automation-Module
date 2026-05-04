@@ -1,0 +1,10 @@
+# Compiled files
+build/
+bin/
+*.o
+*.out
+
+# System/IDE files
+.vscode/
+.idea/
+.DS_Store
