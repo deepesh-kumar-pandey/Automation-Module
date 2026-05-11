@@ -1,0 +1,7 @@
+{
+  "name": "Initial Test",
+  "steps": [
+    { "type": "shell", "command": "mkdir -p output_folder" },
+    { "type": "shell", "command": "echo 'Process Started' > output_folder/log.txt" }
+  ]
+}
