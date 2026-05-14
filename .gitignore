@@ -1,6 +1,7 @@
 # Compiled files
 build/
 bin/
+output_folder/
 *.o
 *.out
 

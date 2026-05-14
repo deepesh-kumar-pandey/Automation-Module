@@ -1,31 +1,49 @@
-#include "core/VariableManager.hpp"
+#include "VariableManager.hpp"
+#include <iostream>
 
-void VariableManager::set(const std::string& key, const std::string& value) {
-    variables[key] = value;
+/**
+ * @brief Thread-safe assignment of variables.
+ * Uses std::lock_guard to ensure the mutex is released even if an exception occurs (RAII).
+ */
+void VariableManager::set(const std::string& name, const std::string& value) {
+    std::lock_guard<std::mutex> lock(mtx);
+    variables[name] = value;
 }
 
-std::string VariableManager::get(const std::string& key) const {
-    auto it = variables.find(key);
-    if (it != variables.end()) {
-        return it->second;
-    }
-    return "";
+/**
+ * @brief Thread-safe retrieval of stored variables.
+ * Returns an empty string if the key is not found to prevent iterator-related crashes.
+ */
+std::string VariableManager::get(const std::string& name) {
+    std::lock_guard<std::mutex> lock(mtx);
+    auto it = variables.find(name);
+    // Standard find check to ensure the key exists before accessing
+    return (it != variables.end()) ? it->second : "";
 }
 
-std::string VariableManager::resolve(const std::string& command) const {
-    std::string result = command;
+/**
+ * @brief Resolves placeholders within a string using stored variables.
+ * 
+ * Iterates through the internal map and replaces all instances of {{key}} with 
+ * their corresponding values. This is the bridge between the translation layer 
+ * and the actual shell execution.
+ */
+std::string VariableManager::replace(std::string text) {
+    // Lock once for the entire replacement process to ensure a consistent state
+    std::lock_guard<std::mutex> lock(mtx);
     
-    // Pattern to match {{key}} placeholders
-    std::regex pattern(R"(\{\{(\w+)\}\})");
-    std::smatch match;
-    
-    while (std::regex_search(result, match, pattern)) {
-        std::string key = match[1].str();
-        std::string value = get(key);
+    for(const auto&[key, value] : variables) {
+        std::string placeholder = "{{" + key + "}}";
+        size_t pos = text.find(placeholder);
         
-        // Replace the first occurrence of {{key}} with its value
-        result.replace(match.position(0), match.length(0), value);
+        // Loop ensures that multiple occurrences of the same variable are replaced
+        while(pos != std::string::npos) {
+            text.replace(pos, placeholder.length(), value);
+            
+            // Resume searching from the end of the newly inserted value to avoid
+            // infinite loops if the value itself contains a placeholder.
+            pos = text.find(placeholder, pos + value.length());
+        }
     }
-    
-    return result;
+    return text;
 }

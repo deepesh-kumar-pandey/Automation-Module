@@ -3,47 +3,49 @@
 
 #include <string>
 #include <unordered_map>
-#include <regex>
+#include <mutex>
 
 /**
  * @class VariableManager
- * @brief Manages dynamic variables and template substitution for automation commands.
+ * @brief Handles in-memory storage and resolution of dynamic placeholders.
  * 
- * This class stores key-value pairs and provides methods to resolve template
- * placeholders (e.g., {{user}}, {{engine_mode}}) in command strings.
+ * This class acts as the "State" of the automation engine, allowing different
+ * steps to share data by storing and retrieving named variables.
  */
 class VariableManager {
 public:
     /**
-     * @brief Constructor: Initialize an empty variable store.
+     * @brief Inserts or updates a variable in the global map.
+     * @param name The unique identifier for the variable (e.g., "kernel_ver").
+     * @param value The content to be stored (e.g., "6.11.0").
+     * @note This operation is thread-safe using a mutex lock.
      */
-    VariableManager() = default;
+    void set(const std::string& name, const std::string& value);
 
     /**
-     * @brief Store a variable.
-     * @param key The variable name (e.g., "user", "kernel").
-     * @param value The variable value (e.g., "Deepesh", "6.11.0").
+     * @brief Retrieves the value associated with a given name.
+     * @param name The name of the variable to look up.
+     * @return The stored string value, or an empty string if the name doesn't exist.
      */
-    void set(const std::string& key, const std::string& value);
+    std::string get(const std::string& name);
 
     /**
-     * @brief Retrieve a stored variable.
-     * @param key The variable name.
-     * @return The variable value, or an empty string if not found.
+     * @brief Scans a string for {{placeholders}} and replaces them with stored values.
+     * @param text The raw input string containing potential variables (e.g., "Running {{kernel_ver}}").
+     * @return A processed string with all recognized placeholders swapped for actual data.
      */
-    std::string get(const std::string& key) const;
-
-    /**
-     * @brief Resolve template placeholders in a command string.
-     * Replaces all {{key}} patterns with their corresponding values.
-     * @param command The command string containing placeholders.
-     * @return The resolved command string.
-     */
-    std::string resolve(const std::string& command) const;
+    std::string replace(std::string text);
 
 private:
-    // Map to store key-value pairs
+    /**
+     * @brief Internal storage using a Hash Map for O(1) average lookup performance.
+     */
     std::unordered_map<std::string, std::string> variables;
+
+    /**
+     * @brief Mutex to prevent data races when multiple threads access the VariableManager.
+     */
+    std::mutex mtx;
 };
 
-#endif /* VARIABLE_MANAGER_HPP */
+#endif // VARIABLE_MANAGER_HPP
