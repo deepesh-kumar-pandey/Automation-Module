@@ -3,7 +3,9 @@
 
 #include <vector>
 #include <string>
+#include <memory>
 #include "Parser.hpp" // Required for the AutomationStep struct definition
+#include "VariableManager.hpp" // Required for VariableManager
 
 /**
  * @class Worker
@@ -17,7 +19,7 @@ public:
      * @brief Constructor: Takes a pre-parsed list of steps.
      * @param steps A vector of AutomationStep objects to be executed.
      */
-    explicit Worker(const std::vector<AutomationStep>& steps) : steps(steps) {};
+    explicit Worker(const std::vector<AutomationStep>& steps, std::shared_ptr<VariableManager> manager);
 
     /**
      * @brief High-level trigger to start the execution of the entire sequence.
@@ -28,6 +30,7 @@ public:
 private:
     // The internal list of tasks to run
     std::vector<AutomationStep> steps;
+    std::shared_ptr<VariableManager> varManager;
 
     /**
      * @brief Internal logic to execute a single task based on its actionType.
