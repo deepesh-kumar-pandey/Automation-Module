@@ -4,22 +4,25 @@
 #include <vector>
 #include <string>
 #include <memory>
-#include "Parser.hpp" // Required for the AutomationStep struct definition
-#include "VariableManager.hpp" // Required for VariableManager
+#include "Parser.hpp" 
+#include "VariableManager.hpp" // Include the header so Worker knows the class size
 
 /**
  * @class Worker
  * @brief Responsible for taking a sequence of automation steps and executing them.
- * * The Worker acts as the execution engine. It processes a list of instructions 
+ * 
+ * The Worker acts as the execution engine. It processes a list of instructions 
  * (AutomationSteps) and translates them into system-level actions.
  */
 class Worker {
 public:
     /**
-     * @brief Constructor: Takes a pre-parsed list of steps.
+     * @brief Constructor: Takes a pre-parsed list of steps and a shared VariableManager.
      * @param steps A vector of AutomationStep objects to be executed.
+     * @param vm Shared pointer to the global VariableManager instance.
      */
-    explicit Worker(const std::vector<AutomationStep>& steps, std::shared_ptr<VariableManager> manager);
+    Worker(const std::vector<AutomationStep>& steps, std::shared_ptr<VariableManager> vm) 
+        : steps(steps), varManager(vm) {}
 
     /**
      * @brief High-level trigger to start the execution of the entire sequence.
@@ -30,6 +33,8 @@ public:
 private:
     // The internal list of tasks to run
     std::vector<AutomationStep> steps;
+
+    // Shared pointer to the VariableManager for resolving placeholders
     std::shared_ptr<VariableManager> varManager;
 
     /**
@@ -37,6 +42,6 @@ private:
      * @param step The specific AutomationStep to process.
      */
     void performAction(const AutomationStep& step);
-}; // Fixed: Changed ':' to ';'
+}; 
 
 #endif /* WORKER_HPP */
