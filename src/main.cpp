@@ -1,30 +1,47 @@
 #include <iostream>
 #include <vector>
-#include "../include/core/Parser.hpp" // Use explicit relative path so the header can be found without additional includePath setup
+#include <memory>
+#include "core/Parser.hpp"
+#include "core/VariableManager.hpp"
+#include "core/Worker.hpp"
 
-using namespace std; 
+using namespace std;
 
-int main() {
+int main(int argc, char* argv[]) {
     cout << "-------------------------------" << endl;
     cout << "   Automation Engine: ONLINE   " << endl;
     cout << "-------------------------------" << endl;
 
-    // Use a relative path that assumes you run from the project root
-    Parser engineParser("sequences/test.json");
+    // 1. Initialize the Shared State (VariableManager)
+    // This allows the Engine to remember values between steps
+    auto varManager = make_shared<VariableManager>();
 
+    // 2. Pre-load test variables (Simulating what your translation layer would do)
+    varManager->set("user", "Deepesh");
+    varManager->set("engine_mode", "High-Performance");
+
+    // 3. Parse the JSON sequence
+    string sequencePath = (argc > 1 ? argv[1] : "sequences/test.json");
+    Parser engineParser(sequencePath);
     auto sequence = engineParser.parse();
 
     if (sequence.empty()) {
-        // This is likely what you are seeing because of the folder path issue
-        cout << "[SYSTEM] No valid steps found. Check if 'sequences/test.json' exists." << endl;
+        cout << "[SYSTEM] No valid steps found. Check '" << sequencePath << "'." << endl;
     } else {
-        cout << "[SYSTEM] Found " << sequence.size() << " steps. Executing..." << endl;
-        
-        for (const auto& step : sequence) {
-            cout << " >> Action: [" << step.actionType << "] | Command: " << step.command << endl;
-        }
+        cout << "[SYSTEM] Found " << sequence.size() << " steps. Initializing Worker..." << endl;
+
+        // 4. Initialize the Worker with the shared VariableManager
+        // This ensures the worker can resolve {{user}} or {{kernel}} tags
+        Worker worker(sequence, varManager);
+
+        // 5. Trigger the Execution Loop
+        // This will run the logic we wrote in Worker::execute()
+        worker.execute();
     }
 
     cout << "-------------------------------" << endl;
+    cout << "   Automation Engine: OFFLINE  " << endl;
+    cout << "-------------------------------" << endl;
+
     return 0;
 }

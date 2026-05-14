@@ -1,4 +1,4 @@
-#include "Parser.hpp" // Include the header for the Parser class
+#include "core/Parser.hpp" // Include the header for the Parser class
 #include <fstream>
 #include <iostream>
 #include <nlohmann/json.hpp> // External library for JSON handling
