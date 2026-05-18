@@ -1,14 +1,8 @@
-#include "Worker.hpp"
+#include "core/Worker.hpp"
 #include <iostream>
 #include <cstdlib> // Necessary for the system() function
 
-/**
- * @brief Constructor: Injects steps and the shared VariableManager instance.
- * @param steps The vector of AutomationStep structs from the Parser.
- * @param vm Shared pointer to the VariableManager.
- */
-Worker::Worker(const std::vector<AutomationStep>& steps, std::shared_ptr<VariableManager> vm) 
-    : steps(steps), varManager(vm) {}
+// Worker constructor is defined inline in the header to keep this file focused on runtime behavior.
 
 /**
  * @brief The execution loop: Resolves placeholders and triggers actions.

@@ -29,7 +29,7 @@ bool Parser::validateFile() const {
  * @brief Main Logic: Translates a JSON file into C++ structs.
  * @return A vector containing all executable steps found in the file.
  */
-std::vector<AutomationStep> Parser::parse() {
+std::vector<AutomationStep> Parser::parse() const {
     std::vector<AutomationStep> steps;
     
     // 1. Initial Validation
