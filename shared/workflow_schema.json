@@ -1,0 +1,23 @@
+{
+  "name": "Default Workflow Schema",
+  "description": "A default automation workflow with multiple shell tasks",
+  "version": "1.0",
+  "steps": [
+    {
+      "type": "shell",
+      "command": "echo 'Workflow started at' && date >> output_folder/log.txt"
+    },
+    {
+      "type": "shell",
+      "command": "mkdir -p output_folder"
+    },
+    {
+      "type": "shell",
+      "command": "echo '=== Automation Engine Output ===' >> output_folder/log.txt"
+    },
+    {
+      "type": "shell",
+      "command": "echo 'Automation Engine is operational' >> output_folder/log.txt"
+    }
+  ]
+}

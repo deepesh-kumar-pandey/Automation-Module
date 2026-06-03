@@ -1,11 +1,32 @@
 # Compiled files
 build/
 bin/
-output_folder/
 *.o
 *.out
+*.a
+*.so
+*.dylib
+
+# Output and logs
+output_folder/
+*.log
+engine_runtime.log
+shared/logs/
 
 # System/IDE files
 .vscode/
 .idea/
 .DS_Store
+.VS/
+*.swp
+*.swo
+*~
+
+# Dependencies
+*.exe
+*.dll
+
+# OS specific
+Thumbs.db
+.AppleDouble
+.LSOverride
