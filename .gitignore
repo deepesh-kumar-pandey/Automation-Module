@@ -7,11 +7,17 @@ bin/
 *.so
 *.dylib
 
-# Output and logs
+# Output and logs - All log files and output folders
 output_folder/
-*.log
-engine_runtime.log
+output/
+logs/
+log/
 shared/logs/
+*.log
+*.txt
+*.LOG
+*.TXT
+engine_runtime.log
 
 # System/IDE files
 .vscode/
