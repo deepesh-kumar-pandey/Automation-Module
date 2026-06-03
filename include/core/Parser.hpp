@@ -3,28 +3,42 @@
 
 #include <string>
 #include <vector>
+#include "BaseTask.hpp" // Pulls in the shared Core::TaskContext definition
 
-struct AutomationStep {
-    std::string actionType;
-    std::string command;
-};
+namespace Core {
 
-class Parser {
-public:
-    // Pass string by const reference to avoid unnecessary memory copies
-    explicit Parser(const std::string& filePath);
-    
-    // Alternative: Use std::filesystem::path for native cross-platform path handling
-    // explicit Parser(std::filesystem::path filePath);
+    /**
+     * @class Parser
+     * @brief Responsible for parsing, validating, and structuring JSON workflow sequences.
+     * * The Parser ingests configuration scripts from disk and transforms them into
+     * an unrolled linear sequence of TaskContext instructions ready for the Worker.
+     */
+    class Parser {
+    public:
+        /**
+         * @brief Constructor initializing the parser with a target sequence file path.
+         * @param filePath Path to the JSON automation pipeline schema file.
+         */
+        explicit Parser(const std::string& filePath);
+        
+        ~Parser() = default;
 
-    // Marked as const because parsing a file shouldn't modify the Parser instance's internal state
-    std::vector<AutomationStep> parse() const;
+        /**
+         * @brief Ingests and processes the JSON file into an executable sequence vector.
+         * @return A vector of fully initialized TaskContext blocks.
+         * @note Marked as const because reading/parsing a file does not alter the parser instance state.
+         */
+        std::vector<TaskContext> parse() const;
 
-private:
-    std::string filePath;
-    
-    // Marked as const (already correct in your snippet)
-    bool validateFile() const; 
-};
+    private:
+        /**
+         * @brief Verifies file existence, readability, and basic JSON structure before parsing.
+         */
+        bool validateFile() const; 
+
+        std::string m_filePath;
+    };
+
+} // namespace Core
 
 #endif // PARSER_HPP

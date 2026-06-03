@@ -4,44 +4,58 @@
 #include <vector>
 #include <string>
 #include <memory>
-#include "Parser.hpp" 
-#include "VariableManager.hpp" // Include the header so Worker knows the class size
+#include <unordered_map>
+#include "BaseTask.hpp"
+#include "VariableManager.hpp"
+#include "SecurityUtils.hpp"
 
-/**
- * @class Worker
- * @brief Responsible for taking a sequence of automation steps and executing them.
- * 
- * The Worker acts as the execution engine. It processes a list of instructions 
- * (AutomationSteps) and translates them into system-level actions.
- */
-class Worker {
-public:
-    /**
-     * @brief Constructor: Takes a pre-parsed list of steps and a shared VariableManager.
-     * @param steps A vector of AutomationStep objects to be executed.
-     * @param vm Shared pointer to the global VariableManager instance.
-     */
-    Worker(const std::vector<AutomationStep>& steps, std::shared_ptr<VariableManager> vm) 
-        : steps(steps), varManager(vm) {}
+namespace Core {
 
     /**
-     * @brief High-level trigger to start the execution of the entire sequence.
-     * Iterates through the stored 'steps' and calls performAction on each.
+     * @class Worker
+     * @brief Central execution engine responsible for cycling through and running steps.
+     * * The Worker walks through a sequential vector of tasks, processes dynamic placeholder 
+     * resolutions, and safely routes execution payloads to their corresponding task strategy handlers.
      */
-    void execute();
+    class Worker {
+    public:
+        /**
+         * @brief Constructor: Initializes the engine loop configuration.
+         * @param steps A sequential vector of parsed task contexts to execute.
+         * @param vm Shared pointer to the central application state variable registry.
+         * @param sec Shared pointer to the application cryptographic core utility engine.
+         */
+        Worker(const std::vector<TaskContext>& steps, 
+               std::shared_ptr<VariableManager> vm,
+               std::shared_ptr<Security::SecurityUtils> sec);
 
-private:
-    // The internal list of tasks to run
-    std::vector<AutomationStep> steps;
+        ~Worker() = default;
 
-    // Shared pointer to the VariableManager for resolving placeholders
-    std::shared_ptr<VariableManager> varManager;
+        /**
+         * @brief High-level orchestration trigger that loops through and fires the automation stream.
+         */
+        void execute();
 
-    /**
-     * @brief Internal logic to execute a single task based on its actionType.
-     * @param step The specific AutomationStep to process.
-     */
-    void performAction(const AutomationStep& step);
-}; 
+    private:
+        /**
+         * @brief Routes an isolated task to its polymorphic processing strategy block.
+         * @param step The specific TaskContext step metadata package to process.
+         */
+        void performAction(const TaskContext& step);
+
+        // Linear sequence sequence array block
+        std::vector<TaskContext> m_steps;
+
+        // Shared engine state pointers
+        std::shared_ptr<VariableManager> m_varManager;
+        std::shared_ptr<Security::SecurityUtils> m_securityUtils;
+
+        /**
+         * @brief Map of type strings (e.g., "command", "api") to their respective decoupled task actions.
+         */
+        std::unordered_map<std::string, std::unique_ptr<BaseTask>> m_taskRegistry;
+    };
+
+} // namespace Core
 
 #endif /* WORKER_HPP */
