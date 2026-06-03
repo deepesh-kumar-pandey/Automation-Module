@@ -1,4 +1,4 @@
-#include "core/SecurityUtils.hpp"
+#include "SecurityUtils.hpp"
 #include <string>
 #include <vector>
 #include <regex>

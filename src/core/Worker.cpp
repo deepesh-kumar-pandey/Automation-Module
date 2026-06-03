@@ -1,53 +1,60 @@
-#include "core/Worker.hpp"
+#include "Worker.hpp"
+#include "ShellTask.hpp" // Added: Include the newly created ShellTask header
 #include <iostream>
-#include <cstdlib> // Necessary for the system() function
 
-// Worker constructor is defined inline in the header to keep this file focused on runtime behavior.
+namespace Core {
 
-/**
- * @brief The execution loop: Resolves placeholders and triggers actions.
- */
-void Worker::execute() {
-    std::cout << "\n[Worker] Starting Execution Sequence..." << std::endl;
-    std::cout << "---------------------------------------" << std::endl;
-
-    for (auto& step : steps) {
-        // 1. Resolve variables using our Manager
-        // Swaps {{key}} for real-time values like kernel version strings.
-        std::string resolvedCommand = varManager->replace(step.command);
-
-        // 2. Update the step's command with the resolved version
-        step.command = resolvedCommand;
-
-        // 3. Perform the action
-        performAction(step);
+    /**
+     * @brief Worker constructor initializing internal orchestration dependencies.
+     * Maps step string keys directly to their concrete polymorphic task executors.
+     */
+    Worker::Worker(const std::vector<TaskContext>& steps, 
+                   std::shared_ptr<VariableManager> vm,
+                   std::shared_ptr<Security::SecurityUtils> sec)
+        : m_steps(steps), m_varManager(vm), m_securityUtils(sec) {
+        
+        // Fixed: Registered the "shell" keyword to instantiate our ShellTask runner
+        m_taskRegistry["shell"] = std::make_unique<ShellTask>();
     }
 
-    std::cout << "---------------------------------------" << std::endl;
-    std::cout << "[Worker] Sequence finished successfully." << std::endl;
-}
+    /**
+     * @brief The core execution loop: Resolves placeholders and triggers actions via polymorphic tasks.
+     */
+    void Worker::execute() {
+        std::cout << "\n[Worker] Starting Execution Sequence..." << std::endl;
+        std::cout << "---------------------------------------" << std::endl;
 
-/**
- * @brief Logic Dispatcher: Interprets the 'actionType' and runs the command.
- */
-void Worker::performAction(const AutomationStep& step) {
-    // Supports "shell" and "type" keys from the JSON
-    if (step.actionType == "shell" || step.actionType == "type") {
-        std::cout << "[Worker] Executing: " << step.command << std::endl;
-
-        /**
-         * system() sends the command to /bin/sh.
-         * c_str() converts std::string to const char* for compatibility.
-         */
-        int result = std::system(step.command.c_str());
-
-        // Error handling for Linux environments (Fedora/KDE)
-        if (result != 0) {
-            std::cerr << "[Worker Error] Command failed with code: " << result << std::endl;
+        for (const auto& step : m_steps) {
+            performAction(step);
         }
-    } 
-    else {
-        std::cerr << "[Worker Warning] Unknown action type: " << step.actionType 
-                  << ". Skipping: " << step.command << std::endl;
+
+        std::cout << "---------------------------------------" << std::endl;
+        std::cout << "[Worker] Sequence finished successfully." << std::endl;
     }
-}
+
+    /**
+     * @brief Logic Dispatcher: Passes the task context to its respective task component.
+     */
+    void Worker::performAction(const TaskContext& step) {
+        // 1. Resolve variables within the action payload string on the fly using our Manager
+        TaskContext resolvedStep = step;
+        if (m_varManager) {
+            resolvedStep.action = m_varManager->replace(step.action);
+        }
+
+        // 2. Lookup the appropriate strategy execution component inside our registry map
+        auto it = m_taskRegistry.find(resolvedStep.type);
+        if (it != m_taskRegistry.end()) {
+            // Polymorphic dispatch passing our state context and security utilities along
+            bool success = it->second->execute(resolvedStep, m_varManager, m_securityUtils);
+            if (!success) {
+                std::cerr << "[Worker Error] Step failed execution: " << resolvedStep.id << std::endl;
+            }
+        } 
+        else {
+            std::cerr << "[Worker Warning] Unknown action type: '" << resolvedStep.type 
+                      << "'. Skipping step ID: " << resolvedStep.id << std::endl;
+        }
+    }
+
+} // namespace Core
