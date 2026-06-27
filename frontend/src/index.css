@@ -1,0 +1,76 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap');
+
+:root {
+  /* Light Theme (Clean, Minimalist) */
+  --bg-root: #F9FAFB;
+  --bg-surface: #FFFFFF;
+  --bg-panel: #FFFFFF;
+  --bg-hover: #F3F4F6;
+  --bg-terminal: #111827;
+  
+  --text-main: #111827;
+  --text-muted: #6B7280;
+  --text-terminal: #D1D5DB;
+  
+  --border: #E5E7EB;
+  --border-focus: #3B82F6;
+  
+  --accent: #3B82F6;
+  --accent-hover: #2563EB;
+  
+  --success: #10B981;
+  --danger: #EF4444;
+  --warning: #F59E0B;
+  
+  --font-sans: 'Inter', -apple-system, sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
+  
+  --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1);
+}
+
+[data-theme='dark'] {
+  --bg-root: #0F172A;
+  --bg-surface: #1E293B;
+  --bg-panel: #1E293B;
+  --bg-hover: #334155;
+  --bg-terminal: #0B0F19;
+  
+  --text-main: #F8FAFC;
+  --text-muted: #94A3B8;
+  --text-terminal: #E2E8F0;
+  
+  --border: #334155;
+  --border-focus: #3B82F6;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: var(--font-sans);
+  background: var(--bg-root);
+  color: var(--text-main);
+  -webkit-font-smoothing: antialiased;
+  height: 100vh;
+  width: 100vw;
+  overflow: hidden;
+}
+
+button {
+  cursor: pointer;
+  border: none;
+  background: transparent;
+  font-family: inherit;
+  color: inherit;
+  transition: all 0.2s ease;
+}
+
+input, textarea {
+  font-family: inherit;
+  outline: none;
+}
